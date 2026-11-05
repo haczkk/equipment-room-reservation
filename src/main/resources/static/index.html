@@ -1,0 +1,2629 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PUP San Pedro - Equipment and Room Reservation</title>
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --pup-maroon: #800000;
+        --pup-gold: #ffd700;
+      }
+      .bg-pup {
+        background-color: var(--pup-maroon) !important;
+      }
+      .text-pup {
+        color: var(--pup-maroon) !important;
+      }
+      .border-pup {
+        border-color: var(--pup-maroon) !important;
+      }
+      .btn-pup {
+        background-color: var(--pup-maroon);
+        color: white;
+      }
+      .btn-pup:hover {
+        background-color: #600000;
+        color: #fff;
+      }
+      .nav-pills .nav-link.active {
+        background-color: var(--pup-maroon);
+      }
+      .nav-link {
+        color: #555;
+        font-weight: 500;
+      }
+      .card-header-pup {
+        background-color: #f8f9fa;
+        border-bottom: 2px solid var(--pup-maroon);
+        font-weight: 600;
+      }
+      .badge-token {
+        font-size: 1.25rem;
+        letter-spacing: 2px;
+      }
+      .slot-pill {
+        cursor: pointer;
+        transition: transform 0.1s ease;
+      }
+      .slot-pill:hover {
+        transform: scale(1.03);
+      }
+      .official-voucher {
+        border: 2px solid var(--pup-maroon);
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      }
+      .voucher-header {
+        border-bottom: 2px solid var(--pup-maroon);
+        background: #fdfbf7;
+      }
+      .notif-unread {
+        background-color: #f0f7ff !important;
+        border-left: 4px solid #0d6efd;
+      }
+    </style>
+  </head>
+  <body class="bg-light">
+    <!-- Top Navigation Bar -->
+    <nav class="navbar navbar-dark bg-pup shadow-sm mb-4">
+      <div class="container d-flex justify-content-between align-items-center">
+        <span class="navbar-brand mb-0 h1">
+          🏛️ Polytechnic University of the Philippines &bull; San Pedro Campus
+        </span>
+        <div id="navUserArea" class="d-flex align-items-center gap-2">
+          <button
+            class="btn btn-sm btn-outline-light"
+            data-bs-toggle="modal"
+            data-bs-target="#loginModal"
+          >
+            🔑 Sign In
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container pb-5">
+      <!-- GUEST WELCOME SCREEN -->
+      <div
+        id="guestWelcomeView"
+        class="row justify-content-center my-4"
+        style="display: none"
+      >
+        <div class="col-md-9 text-center">
+          <div class="card shadow border-0 p-5 bg-white">
+            <h2 class="text-pup fw-bold mb-2">
+              Equipment & Room Reservation System
+            </h2>
+            <p class="text-muted lead mb-4">
+              PUP San Pedro Campus centralized portal for classroom schedules,
+              instructional equipment borrowing, and return tracking.
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+              <button
+                class="btn btn-pup px-4 py-2"
+                data-bs-toggle="modal"
+                data-bs-target="#loginModal"
+              >
+                🔑 Sign In to Portal
+              </button>
+              <button
+                class="btn btn-outline-secondary px-4 py-2"
+                onclick="activateRegisterTab()"
+              >
+                📝 Register as Class President
+              </button>
+            </div>
+            <hr class="my-4" />
+            <div class="row g-3 text-start small text-muted">
+              <div class="col-md-4">
+                <strong>👨‍🎓 Class Presidents</strong><br />
+                Register with single-use section codes to check availability and
+                submit real-time reservations.
+              </div>
+              <div class="col-md-4">
+                <strong>🛡️ Campus Administrators</strong><br />
+                Manage conflict reviews, redeem single-use pickup tokens, and
+                log resource returns.
+              </div>
+              <div class="col-md-4">
+                <strong>🔒 Security & Tracking</strong><br />
+                Operating hours enforcement, BCrypt encrypted credentials, and
+                automated audit logs.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AUTHENTICATED TABS BAR -->
+      <ul
+        class="nav nav-pills nav-fill mb-4 p-2 bg-white rounded shadow-sm"
+        id="pills-tab"
+        role="tablist"
+      >
+        <li class="nav-item" id="navItemPresident">
+          <button
+            class="nav-link active"
+            id="tab-president-btn"
+            data-bs-toggle="pill"
+            data-bs-target="#tab-president"
+            type="button"
+            onclick="loadMyReservations()"
+          >
+            👨‍🎓 Class President Portal
+          </button>
+        </li>
+        <li class="nav-item" id="navItemAdmin">
+          <button
+            class="nav-link"
+            id="tab-admin-btn"
+            data-bs-toggle="pill"
+            data-bs-target="#tab-admin"
+            type="button"
+            onclick="loadAdminTab()"
+          >
+            🛡️ Admin Operations
+          </button>
+        </li>
+        <li class="nav-item" id="navItemSuperAdmin">
+          <button
+            class="nav-link"
+            id="tab-superadmin-btn"
+            data-bs-toggle="pill"
+            data-bs-target="#tab-superadmin"
+            type="button"
+            onclick="loadSuperAdminData()"
+          >
+            👑 Super Admin & Audit
+          </button>
+        </li>
+        <li class="nav-item" id="navItemRegister">
+          <button
+            class="nav-link"
+            id="tab-register-btn"
+            data-bs-toggle="pill"
+            data-bs-target="#tab-register"
+            type="button"
+          >
+            📝 Register President
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content" id="pills-tabContent">
+        <!-- TAB 1: CLASS PRESIDENT PORTAL -->
+        <div class="tab-pane fade show active" id="tab-president">
+          <div class="row">
+            <div class="col-lg-7 mb-4">
+              <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header card-header-pup">
+                  📅 Submit Reservation Request
+                </div>
+                <div class="card-body">
+                  <form
+                    id="reservationForm"
+                    onsubmit="handleReservationSubmit(event)"
+                  >
+                    <div class="row mb-3">
+                      <div class="col-md-6">
+                        <label class="form-label">Authorized President</label>
+                        <div
+                          id="presidentDisplay"
+                          class="p-2 border rounded bg-light text-muted small"
+                        >
+                          Please
+                          <a
+                            href="#"
+                            data-bs-toggle="modal"
+                            data-bs-target="#loginModal"
+                            >Sign In</a
+                          >
+                          to auto-bind your account.
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Select Resource</label>
+                        <select
+                          class="form-select"
+                          id="resourceSelect"
+                          onchange="fetchSchedule()"
+                          required
+                        >
+                          <option value="">Loading resources...</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="row mb-3">
+                      <div class="col-md-4">
+                        <label class="form-label">Date (Next 7 Days)</label>
+                        <input
+                          type="date"
+                          class="form-control"
+                          id="resDate"
+                          onchange="fetchSchedule()"
+                          required
+                        />
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label"
+                          >Start Time (07:00 - 19:00)</label
+                        >
+                        <input
+                          type="time"
+                          class="form-control"
+                          id="startTime"
+                          value="09:00"
+                          required
+                        />
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">End Time</label>
+                        <input
+                          type="time"
+                          class="form-control"
+                          id="endTime"
+                          value="11:00"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div class="row mb-3">
+                      <div class="col-md-8">
+                        <label class="form-label">Professor Name</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="professorName"
+                          placeholder="e.g. Prof. Santos"
+                          required
+                        />
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Quantity</label>
+                        <input
+                          type="number"
+                          class="form-control"
+                          id="resQuantity"
+                          value="1"
+                          min="1"
+                          max="10"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="form-label">Purpose</label>
+                      <textarea
+                        class="form-control"
+                        id="purpose"
+                        rows="2"
+                        placeholder="e.g. INTE 201 Final Exam"
+                        required
+                      ></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-pup w-100 py-2">
+                      Submit Request
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              <!-- Real-Time Availability Timetable -->
+              <div class="card shadow-sm border-0">
+                <div
+                  class="card-header card-header-pup d-flex justify-content-between align-items-center"
+                >
+                  <span
+                    >🕒 Real-Time Availability Timetable (07:00 - 19:00)</span
+                  >
+                  <small class="text-muted"
+                    >Click any free slot to auto-fill</small
+                  >
+                </div>
+                <div class="card-body">
+                  <div id="timetableGrid" class="row g-2">
+                    <div class="col-12 text-center text-muted py-3">
+                      Select a resource and date to view availability.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Status Card + My Bookings (With Search & Status Filter) -->
+            <div class="col-lg-5">
+              <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header card-header-pup">
+                  🔔 Latest Request Status
+                </div>
+                <div class="card-body text-center p-3" id="resultCard">
+                  <p class="text-muted mb-0 small">
+                    Fill out the form and submit to receive your real-time
+                    booking status.
+                  </p>
+                </div>
+              </div>
+
+              <!-- My Booking History Card with Live Filter Bar -->
+              <div class="card shadow-sm border-0">
+                <div
+                  class="card-header card-header-pup d-flex flex-wrap justify-content-between align-items-center gap-2"
+                >
+                  <span>📋 My Reservation History</span>
+                  <div class="d-flex gap-1 align-items-center">
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      id="myBookingsSearchInput"
+                      placeholder="🔍 Search..."
+                      style="width: 110px"
+                      oninput="filterMyReservations()"
+                    />
+                    <select
+                      class="form-select form-select-sm"
+                      id="myBookingsStatusFilter"
+                      style="width: 105px"
+                      onchange="filterMyReservations()"
+                    >
+                      <option value="">All</option>
+                      <option value="AUTO_APPROVED">Approved</option>
+                      <option value="PENDING">Pending</option>
+                      <option value="PICKED_UP">In Use</option>
+                      <option value="RETURNED">Returned</option>
+                      <option value="CANCELLED">Cancelled</option>
+                    </select>
+                    <button
+                      class="btn btn-sm btn-outline-secondary"
+                      onclick="loadMyReservations()"
+                    >
+                      ↻
+                    </button>
+                  </div>
+                </div>
+                <div
+                  class="card-body p-0"
+                  style="max-height: 480px; overflow-y: auto"
+                >
+                  <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0">
+                      <thead class="table-light sticky-top">
+                        <tr>
+                          <th>Booking</th>
+                          <th>Schedule</th>
+                          <th>Status</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody id="myBookingsBody">
+                        <tr>
+                          <td colspan="4" class="text-center text-muted py-3">
+                            Sign in to view your history.
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: ADMIN OPERATIONS -->
+        <div class="tab-pane fade" id="tab-admin">
+          <!-- KPI Executive Metric Cards -->
+          <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-lg-3">
+              <div
+                class="card border-0 shadow-sm border-start border-warning border-4 h-100"
+              >
+                <div class="card-body">
+                  <div
+                    class="d-flex justify-content-between align-items-center"
+                  >
+                    <div>
+                      <span class="text-muted small text-uppercase fw-bold"
+                        >Pending Reviews</span
+                      >
+                      <h2 class="mb-0 fw-bold text-warning" id="kpiPending">
+                        0
+                      </h2>
+                    </div>
+                    <div class="fs-1 text-warning-emphasis">⏳</div>
+                  </div>
+                  <small class="text-muted">Awaiting decision</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div
+                class="card border-0 shadow-sm border-start border-primary border-4 h-100"
+              >
+                <div class="card-body">
+                  <div
+                    class="d-flex justify-content-between align-items-center"
+                  >
+                    <div>
+                      <span class="text-muted small text-uppercase fw-bold"
+                        >Items In Use</span
+                      >
+                      <h2 class="mb-0 fw-bold text-primary" id="kpiActive">
+                        0
+                      </h2>
+                    </div>
+                    <div class="fs-1 text-primary-emphasis">🔑</div>
+                  </div>
+                  <small class="text-muted">Currently borrowed</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div
+                class="card border-0 shadow-sm border-start border-danger border-4 h-100"
+              >
+                <div class="card-body">
+                  <div
+                    class="d-flex justify-content-between align-items-center"
+                  >
+                    <div>
+                      <span class="text-muted small text-uppercase fw-bold"
+                        >Maintenance</span
+                      >
+                      <h2 class="mb-0 fw-bold text-danger" id="kpiMaintenance">
+                        0
+                      </h2>
+                    </div>
+                    <div class="fs-1 text-danger-emphasis">🛠️</div>
+                  </div>
+                  <small class="text-muted">Disabled facilities</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+              <div
+                class="card border-0 shadow-sm border-start border-pup border-4 h-100"
+              >
+                <div class="card-body">
+                  <div
+                    class="d-flex justify-content-between align-items-center"
+                  >
+                    <div>
+                      <span class="text-muted small text-uppercase fw-bold"
+                        >Total Facilities</span
+                      >
+                      <h2 class="mb-0 fw-bold text-pup" id="kpiFacilities">
+                        0
+                      </h2>
+                    </div>
+                    <div class="fs-1 text-secondary">🏛️</div>
+                  </div>
+                  <small class="text-muted">Managed on campus</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row: Token Redemption and Returns -->
+          <div class="row mb-4">
+            <div class="col-md-6 mb-3 mb-md-0">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-header card-header-pup">
+                  🎟️ Redeem Pickup Token
+                </div>
+                <div class="card-body">
+                  <p class="small text-muted">
+                    Verify the President's one-time token to release the key or
+                    equipment.
+                  </p>
+                  <div class="input-group mb-2">
+                    <input
+                      type="text"
+                      class="form-control text-uppercase"
+                      id="pickupTokenInput"
+                      placeholder="e.g. TCK-8F2B10A4"
+                    />
+                    <button class="btn btn-pup" onclick="handleTokenRedeem()">
+                      Verify & Release
+                    </button>
+                  </div>
+                  <div id="pickupResult"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-header card-header-pup">
+                  🔄 Mark Resource Returned
+                </div>
+                <div class="card-body">
+                  <p class="small text-muted">
+                    Enter Reservation ID to mark it returned and restore
+                    inventory.
+                  </p>
+                  <div class="input-group mb-2">
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="returnResIdInput"
+                      placeholder="Reservation ID"
+                    />
+                    <button class="btn btn-dark" onclick="handleReturn()">
+                      Mark Returned
+                    </button>
+                  </div>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="damagedCheck"
+                    />
+                    <label
+                      class="form-check-label text-danger small"
+                      for="damagedCheck"
+                    >
+                      Mark as Damaged (Sets resource to UNDER_MAINTENANCE)
+                    </label>
+                  </div>
+                  <div id="returnResult" class="mt-2"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Facilities & Inventory Management Panel with Search & Filter -->
+          <div class="card shadow-sm border-0 mb-4">
+            <div
+              class="card-header card-header-pup d-flex flex-wrap justify-content-between align-items-center gap-2"
+            >
+              <span>📦 Facilities & Equipment Inventory</span>
+              <div class="d-flex flex-wrap gap-1 align-items-center">
+                <input
+                  type="text"
+                  class="form-control form-control-sm"
+                  id="inventorySearchInput"
+                  placeholder="🔍 Search resource..."
+                  style="width: 140px"
+                  oninput="filterInventory()"
+                />
+                <select
+                  class="form-select form-select-sm"
+                  id="inventoryTypeFilter"
+                  style="width: 110px"
+                  onchange="filterInventory()"
+                >
+                  <option value="">All Types</option>
+                  <option value="ROOM">Rooms</option>
+                  <option value="EQUIPMENT">Equipment</option>
+                </select>
+                <a
+                  href="/api/admin/inventory/export-csv"
+                  class="btn btn-sm btn-outline-success"
+                  >📥 CSV</a
+                >
+                <button
+                  class="btn btn-sm btn-pup"
+                  data-bs-toggle="modal"
+                  data-bs-target="#addResourceModal"
+                >
+                  ➕ Add
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-secondary"
+                  onclick="loadAdminInventory()"
+                >
+                  ↻
+                </button>
+              </div>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>ID</th>
+                      <th>Name</th>
+                      <th>Type</th>
+                      <th>Stock (Available / Total)</th>
+                      <th>Status</th>
+                      <th>Maintenance Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="inventoryTableBody">
+                    <tr>
+                      <td colspan="6" class="text-center text-muted py-3">
+                        Loading inventory...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pending Requests Table -->
+          <div class="card shadow-sm border-0">
+            <div
+              class="card-header card-header-pup d-flex justify-content-between align-items-center"
+            >
+              <span>⏳ Requests Pending Manual Review</span>
+              <button
+                class="btn btn-sm btn-outline-secondary"
+                onclick="loadPendingRequests()"
+              >
+                ↻ Refresh
+              </button>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>ID</th>
+                      <th>President</th>
+                      <th>Resource</th>
+                      <th>Date & Time</th>
+                      <th>Professor</th>
+                      <th>Purpose</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pendingTableBody">
+                    <tr>
+                      <td colspan="7" class="text-center text-muted py-4">
+                        No pending requests found.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: SUPER ADMIN & AUDIT TRAIL with User Management Panel -->
+        <div class="tab-pane fade" id="tab-superadmin">
+          <!-- Section 1: Code Generator & Codes History -->
+          <div class="row mb-4">
+            <div class="col-md-5 mb-3 mb-md-0">
+              <div class="card shadow-sm border-0 h-100">
+                <div class="card-header card-header-pup">
+                  ⚙️ Generate Section Registration Code
+                </div>
+                <div class="card-body">
+                  <p class="small text-muted">
+                    Generate a unique single-use code bound to a specific class
+                    section.
+                  </p>
+                  <div class="input-group mb-2">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="newSectionInput"
+                      placeholder="e.g. BSIT 2-2"
+                    />
+                    <button class="btn btn-pup" onclick="handleGenerateCode()">
+                      Generate
+                    </button>
+                  </div>
+                  <div id="generateCodeResult" class="mt-2"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-7">
+              <div class="card shadow-sm border-0 h-100">
+                <div
+                  class="card-header card-header-pup d-flex justify-content-between align-items-center"
+                >
+                  <span>📋 Section Codes History</span>
+                  <button
+                    class="btn btn-sm btn-outline-secondary"
+                    onclick="loadCodes()"
+                  >
+                    ↻ Refresh
+                  </button>
+                </div>
+                <div
+                  class="card-body p-0"
+                  style="max-height: 220px; overflow-y: auto"
+                >
+                  <table class="table table-sm table-hover mb-0">
+                    <thead class="table-light sticky-top">
+                      <tr>
+                        <th>Code</th>
+                        <th>Section</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="codesTableBody">
+                      <tr>
+                        <td colspan="3" class="text-center text-muted py-2">
+                          Loading...
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: User Accounts & Administrator Management Panel (Proposal Page 5 Requirement) -->
+          <div class="card shadow-sm border-0 mb-4">
+            <div
+              class="card-header card-header-pup d-flex flex-wrap justify-content-between align-items-center gap-2"
+            >
+              <span>👥 Campus User & Administrator Accounts</span>
+              <div class="d-flex gap-1 align-items-center">
+                <button
+                  class="btn btn-sm btn-pup"
+                  data-bs-toggle="modal"
+                  data-bs-target="#createAdminModal"
+                >
+                  ➕ Create Admin Staff
+                </button>
+                <button
+                  class="btn btn-sm btn-outline-secondary"
+                  onclick="loadUsers()"
+                >
+                  ↻ Refresh
+                </button>
+              </div>
+            </div>
+            <div class="card-body p-0">
+              <div
+                class="table-responsive"
+                style="max-height: 280px; overflow-y: auto"
+              >
+                <table class="table table-hover align-middle mb-0">
+                  <thead class="table-light sticky-top">
+                    <tr>
+                      <th>ID</th>
+                      <th>Full Name</th>
+                      <th>PUP Email</th>
+                      <th>Role</th>
+                      <th>Section</th>
+                      <th>Status</th>
+                      <th>Account Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="usersTableBody">
+                    <tr>
+                      <td colspan="7" class="text-center text-muted py-3">
+                        Loading users...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Full Audit Trail Table with Live Filter & Search -->
+          <div class="card shadow-sm border-0">
+            <div
+              class="card-header card-header-pup d-flex flex-wrap justify-content-between align-items-center gap-2"
+            >
+              <span>📜 System Activity & Audit Trail</span>
+              <div class="d-flex flex-wrap gap-2 align-items-center">
+                <input
+                  type="text"
+                  class="form-control form-control-sm"
+                  id="auditSearchInput"
+                  placeholder="🔍 Search logs..."
+                  style="width: 170px"
+                  oninput="filterAuditLogs()"
+                />
+                <select
+                  class="form-select form-select-sm"
+                  id="auditActionFilter"
+                  style="width: 140px"
+                  onchange="filterAuditLogs()"
+                >
+                  <option value="">All Actions</option>
+                  <option value="LOGIN">LOGIN</option>
+                  <option value="REGISTER">REGISTER</option>
+                  <option value="CREATE_ADMIN">CREATE_ADMIN</option>
+                  <option value="TOGGLE_USER_STATUS">TOGGLE_USER_STATUS</option>
+                  <option value="CHANGE_PASSWORD">CHANGE_PASSWORD</option>
+                  <option value="AUTO_APPROVE">AUTO_APPROVE</option>
+                  <option value="MANUAL_APPROVE">MANUAL_APPROVE</option>
+                  <option value="REJECT">REJECT</option>
+                  <option value="PICKUP">PICKUP</option>
+                  <option value="RETURN">RETURN</option>
+                  <option value="AUTO_CANCEL">AUTO_CANCEL</option>
+                  <option value="GENERATE_CODE">GENERATE_CODE</option>
+                  <option value="CREATE_RESOURCE">CREATE_RESOURCE</option>
+                  <option value="SET_MAINTENANCE">SET_MAINTENANCE</option>
+                  <option value="SET_AVAILABLE">SET_AVAILABLE</option>
+                </select>
+                <a
+                  href="/api/superadmin/audit-logs/export-csv"
+                  class="btn btn-sm btn-outline-success"
+                  >📥 CSV</a
+                >
+                <button
+                  class="btn btn-sm btn-outline-secondary"
+                  onclick="loadAuditLogs()"
+                >
+                  ↻
+                </button>
+              </div>
+            </div>
+            <div class="card-body p-0">
+              <div
+                class="table-responsive"
+                style="max-height: 380px; overflow-y: auto"
+              >
+                <table class="table table-sm table-hover align-middle mb-0">
+                  <thead class="table-light sticky-top">
+                    <tr>
+                      <th>Timestamp</th>
+                      <th>Actor</th>
+                      <th>Action</th>
+                      <th>Details</th>
+                    </tr>
+                  </thead>
+                  <tbody id="auditTableBody">
+                    <tr>
+                      <td colspan="4" class="text-center text-muted py-3">
+                        Loading audit logs...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: PRESIDENT REGISTRATION -->
+        <div class="tab-pane fade" id="tab-register">
+          <div class="row justify-content-center">
+            <div class="col-md-6">
+              <div class="card shadow-sm border-0">
+                <div class="card-header card-header-pup">
+                  📝 Register Class President Account
+                </div>
+                <div class="card-body">
+                  <form id="registerForm" onsubmit="handleRegister(event)">
+                    <div class="mb-3">
+                      <label class="form-label">Full Name</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="regFullName"
+                        required
+                        placeholder="Juan Dela Cruz"
+                      />
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">PUP WebMail Address</label>
+                      <input
+                        type="email"
+                        class="form-control"
+                        id="regEmail"
+                        required
+                        placeholder="name@pup.edu.ph"
+                      />
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">Password</label>
+                      <input
+                        type="password"
+                        class="form-control"
+                        id="regPassword"
+                        required
+                      />
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">Single-Use Section Code</label>
+                      <input
+                        type="text"
+                        class="form-control text-uppercase"
+                        id="regCode"
+                        required
+                        placeholder="SEC-BSIT21-XXXX"
+                      />
+                      <div class="form-text">
+                        Obtained directly from the Super Admin.
+                      </div>
+                    </div>
+                    <button type="submit" class="btn btn-pup w-100 py-2">
+                      Create President Account
+                    </button>
+                  </form>
+                  <div id="registerAlert" class="mt-3"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-pup text-white">
+            <h5 class="modal-title">🔐 Sign In</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body p-4">
+            <form id="loginForm" onsubmit="handleLogin(event)">
+              <div class="mb-3">
+                <label class="form-label">PUP Email Address</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="loginEmail"
+                  required
+                  placeholder="name@pup.edu.ph"
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="loginPassword"
+                  required
+                />
+              </div>
+              <button type="submit" class="btn btn-pup w-100 py-2">
+                Sign In
+              </button>
+            </form>
+            <div id="loginAlert" class="mt-3"></div>
+            <hr />
+            <div class="small text-muted">
+              <strong>Available Demo Accounts:</strong><br />
+              &bull; 👑 Super Admin: <code>superadmin@pup.edu.ph</code> /
+              <code>admin123</code><br />
+              &bull; 🛡️ Staff Admin: <code>admin@pup.edu.ph</code> /
+              <code>admin123</code><br />
+              &bull; 👨‍🎓 President: <code>juan@pup.edu.ph</code> /
+              <code>password123</code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Account Settings / Change Password Modal -->
+    <div class="modal fade" id="settingsModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-pup text-white">
+            <h5 class="modal-title">⚙️ Account Settings & Security</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body p-4">
+            <div class="bg-light p-3 rounded mb-3 border">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <strong id="settingsFullName" class="d-block text-dark"
+                    >-</strong
+                  >
+                  <small id="settingsEmail" class="text-muted">-</small>
+                </div>
+                <span id="settingsRoleBadge" class="badge bg-secondary">-</span>
+              </div>
+            </div>
+
+            <h6 class="fw-bold text-pup border-bottom pb-2 mb-3">
+              Change Password
+            </h6>
+            <form
+              id="changePasswordForm"
+              onsubmit="handleChangePassword(event)"
+            >
+              <div class="mb-3">
+                <label class="form-label small">Current Password</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="currentPasswordInput"
+                  required
+                  placeholder="Enter existing password"
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label small"
+                  >New Password (Min. 6 characters)</label
+                >
+                <input
+                  type="password"
+                  class="form-control"
+                  id="newPasswordInput"
+                  minlength="6"
+                  required
+                  placeholder="Enter new password"
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label small">Confirm New Password</label>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="confirmPasswordInput"
+                  minlength="6"
+                  required
+                  placeholder="Re-type new password"
+                />
+              </div>
+              <button type="submit" class="btn btn-pup w-100 py-2">
+                Update Password
+              </button>
+            </form>
+            <div id="settingsAlert" class="mt-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create Admin Modal (Proposal Page 5 Requirement) -->
+    <div class="modal fade" id="createAdminModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-pup text-white">
+            <h5 class="modal-title">➕ Create Staff Administrator Account</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body p-4">
+            <form id="createAdminForm" onsubmit="handleCreateAdmin(event)">
+              <div class="mb-3">
+                <label class="form-label">Full Name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="adminFullName"
+                  placeholder="e.g. Maria Clara"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">PUP Email Address</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="adminEmailInput"
+                  placeholder="clara@pup.edu.ph"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label"
+                  >Initial Password (Min. 6 characters)</label
+                >
+                <input
+                  type="password"
+                  class="form-control"
+                  id="adminPasswordInput"
+                  minlength="6"
+                  required
+                />
+              </div>
+              <button type="submit" class="btn btn-pup w-100 py-2">
+                Create Administrator
+              </button>
+            </form>
+            <div id="createAdminAlert" class="mt-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Resource Modal -->
+    <div class="modal fade" id="addResourceModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-pup text-white">
+            <h5 class="modal-title">➕ Add Campus Facility / Resource</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body p-4">
+            <form id="addResourceForm" onsubmit="handleAddResource(event)">
+              <div class="mb-3">
+                <label class="form-label">Resource Name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="newResourceName"
+                  placeholder="e.g. Computer Laboratory 2"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Resource Type</label>
+                <select
+                  class="form-select"
+                  id="newResourceType"
+                  onchange="toggleQtyInput()"
+                  required
+                >
+                  <option value="ROOM">Classroom / Laboratory / AVR</option>
+                  <option value="EQUIPMENT">Equipment / Projector / Key</option>
+                </select>
+              </div>
+              <div class="mb-3" id="qtyWrapper" style="display: none">
+                <label class="form-label">Total Quantity</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="newResourceQty"
+                  value="1"
+                  min="1"
+                  max="50"
+                />
+                <div class="form-text">
+                  Number of identical units available for borrowing.
+                </div>
+              </div>
+              <button type="submit" class="btn btn-pup w-100 py-2">
+                Save to Campus Inventory
+              </button>
+            </form>
+            <div id="addResourceAlert" class="mt-3"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Digital Pickup Pass Modal -->
+    <div class="modal fade" id="passModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow">
+          <div class="modal-header bg-pup text-white">
+            <h5 class="modal-title">🎟️ Official PUP Reservation Voucher</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body p-4" id="passModalBody"></div>
+          <div class="modal-footer justify-content-between bg-light">
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-sm"
+              data-bs-dismiss="modal"
+            >
+              Close
+            </button>
+            <div class="d-flex gap-2">
+              <button
+                type="button"
+                class="btn btn-outline-dark btn-sm"
+                onclick="copyCurrentToken()"
+              >
+                📋 Copy Token
+              </button>
+              <button
+                type="button"
+                class="btn btn-pup btn-sm"
+                onclick="printVoucher()"
+              >
+                🖨️ Print / Save as PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap 5 Toast Container -->
+    <div
+      class="toast-container position-fixed bottom-0 end-0 p-3"
+      style="z-index: 1100"
+    >
+      <div
+        id="liveToast"
+        class="toast align-items-center text-white border-0 shadow"
+        role="alert"
+        aria-live="assertive"
+        aria-atomic="true"
+      >
+        <div class="d-flex">
+          <div class="toast-body fs-6" id="toastMessage"></div>
+          <button
+            type="button"
+            class="btn-close btn-close-white me-2 m-auto"
+            data-bs-dismiss="toast"
+          ></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- UI Logic Script -->
+    <script>
+      const API_BASE = "http://localhost:8080/api";
+      let currentUser = JSON.parse(sessionStorage.getItem("pup_user")) || null;
+      let activeVoucherToken = "";
+      let lastKnownUnreadCount = 0;
+
+      let cachedMyReservations = [];
+      let cachedInventory = [];
+      let cachedAuditLogs = [];
+      let cachedUsers = [];
+
+      function showToast(message, type = "success") {
+        const toastEl = document.getElementById("liveToast");
+        const toastMsg = document.getElementById("toastMessage");
+
+        toastEl.className =
+          "toast align-items-center text-white border-0 shadow";
+        if (type === "success") {
+          toastEl.classList.add("bg-success");
+          toastMsg.innerHTML = `✅ ${message}`;
+        } else if (type === "error") {
+          toastEl.classList.add("bg-danger");
+          toastMsg.innerHTML = `❌ ${message}`;
+        } else if (type === "warning") {
+          toastEl.classList.add("bg-warning", "text-dark");
+          toastMsg.innerHTML = `⚠️ ${message}`;
+        } else {
+          toastEl.classList.add("bg-dark");
+          toastMsg.innerHTML = `ℹ️ ${message}`;
+        }
+
+        const toast = new bootstrap.Toast(toastEl, { delay: 3500 });
+        toast.show();
+      }
+
+      // 1. Role-Based View & Tab Filtering
+      function applyRolePermissions() {
+        const navArea = document.getElementById("navUserArea");
+        const presDisplay = document.getElementById("presidentDisplay");
+        const guestWelcome = document.getElementById("guestWelcomeView");
+        const pillsBar = document.getElementById("pills-tab");
+        const tabContent = document.getElementById("pills-tabContent");
+
+        const itemPres = document.getElementById("navItemPresident");
+        const itemAdmin = document.getElementById("navItemAdmin");
+        const itemSuperAdmin = document.getElementById("navItemSuperAdmin");
+        const itemRegister = document.getElementById("navItemRegister");
+
+        if (!currentUser) {
+          navArea.innerHTML = `
+                    <button class="btn btn-sm btn-outline-light" data-bs-toggle="modal" data-bs-target="#loginModal">
+                        🔑 Sign In
+                    </button>
+                `;
+          guestWelcome.style.display = "flex";
+          pillsBar.style.display = "none";
+          tabContent.style.display = "none";
+          return;
+        }
+
+        guestWelcome.style.display = "none";
+        pillsBar.style.display = "flex";
+        tabContent.style.display = "block";
+
+        let roleBadge = `<span class="badge bg-warning text-dark">${currentUser.role}</span>`;
+        if (currentUser.role === "SUPER_ADMIN") {
+          roleBadge = `<span class="badge bg-danger">SUPER ADMIN</span>`;
+        } else if (currentUser.role === "ADMIN") {
+          roleBadge = `<span class="badge bg-primary">ADMIN STAFF</span>`;
+        }
+
+        navArea.innerHTML = `
+                <div class="dropdown me-2">
+                    <button class="btn btn-sm btn-outline-light position-relative" type="button" id="notifDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false" onclick="fetchNotifications()">
+                        🔔
+                        <span id="notifBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display:none; font-size: 0.65rem;">
+                            0
+                        </span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 p-2" aria-labelledby="notifDropdownBtn" style="width: 320px; max-height: 400px; overflow-y: auto;">
+                        <li class="d-flex justify-content-between align-items-center px-2 py-1 border-bottom mb-2">
+                            <span class="fw-bold small text-pup">Notifications</span>
+                            <a href="#" class="small text-muted text-decoration-none" onclick="markAllNotificationsRead(event)">Mark all read</a>
+                        </li>
+                        <div id="notifListContainer">
+                            <li class="text-center text-muted py-3 small">Checking notifications...</li>
+                        </div>
+                    </ul>
+                </div>
+
+                <span class="text-white small">
+                    👋 <strong>${currentUser.fullName}</strong> 
+                    ${roleBadge}
+                    ${currentUser.section && currentUser.section !== "N/A" ? `<span class="badge bg-light text-dark">${currentUser.section}</span>` : ""}
+                </span>
+
+                <button class="btn btn-sm btn-outline-light ms-2" onclick="openSettingsModal()">⚙️ Settings</button>
+                <button class="btn btn-sm btn-outline-light ms-1" onclick="handleLogout()">Sign Out</button>
+            `;
+
+        if (presDisplay) {
+          presDisplay.innerHTML = `
+                    <strong class="text-dark">${currentUser.fullName}</strong> (${currentUser.section})
+                    <input type="hidden" id="presidentId" value="${currentUser.id}">
+                `;
+        }
+
+        if (currentUser.role === "CLASS_PRESIDENT") {
+          itemPres.style.display = "block";
+          itemAdmin.style.display = "none";
+          itemSuperAdmin.style.display = "none";
+          itemRegister.style.display = "none";
+          bootstrap.Tab.getOrCreateInstance(
+            document.getElementById("tab-president-btn"),
+          ).show();
+          loadMyReservations();
+        } else if (currentUser.role === "ADMIN") {
+          itemPres.style.display = "none";
+          itemAdmin.style.display = "block";
+          itemSuperAdmin.style.display = "none";
+          itemRegister.style.display = "none";
+          bootstrap.Tab.getOrCreateInstance(
+            document.getElementById("tab-admin-btn"),
+          ).show();
+          loadAdminTab();
+        } else if (currentUser.role === "SUPER_ADMIN") {
+          itemPres.style.display = "block";
+          itemAdmin.style.display = "block";
+          itemSuperAdmin.style.display = "block";
+          itemRegister.style.display = "block";
+          bootstrap.Tab.getOrCreateInstance(
+            document.getElementById("tab-superadmin-btn"),
+          ).show();
+          loadSuperAdminData();
+        }
+
+        fetchNotifications();
+      }
+      applyRolePermissions();
+
+      function openSettingsModal() {
+        if (!currentUser) return;
+        document.getElementById("settingsFullName").textContent =
+          currentUser.fullName;
+        document.getElementById("settingsEmail").textContent =
+          currentUser.email;
+        document.getElementById("settingsRoleBadge").textContent =
+          currentUser.role +
+          (currentUser.section && currentUser.section !== "N/A"
+            ? ` (${currentUser.section})`
+            : "");
+        document.getElementById("changePasswordForm").reset();
+        document.getElementById("settingsAlert").innerHTML = "";
+
+        new bootstrap.Modal(document.getElementById("settingsModal")).show();
+      }
+
+      async function handleChangePassword(e) {
+        e.preventDefault();
+        const alertDiv = document.getElementById("settingsAlert");
+        const curPass = document.getElementById("currentPasswordInput").value;
+        const newPass = document.getElementById("newPasswordInput").value;
+        const confPass = document.getElementById("confirmPasswordInput").value;
+
+        if (newPass !== confPass) {
+          alertDiv.innerHTML = `<div class="alert alert-danger py-2 mb-0 small">New passwords do not match.</div>`;
+          return;
+        }
+
+        try {
+          const res = await fetch(`${API_BASE}/auth/change-password`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId: currentUser.id,
+              currentPassword: curPass,
+              newPassword: newPass,
+            }),
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            showToast("Password updated successfully!", "success");
+            bootstrap.Modal.getInstance(
+              document.getElementById("settingsModal"),
+            ).hide();
+            document.getElementById("changePasswordForm").reset();
+          } else {
+            alertDiv.innerHTML = `<div class="alert alert-danger py-2 mb-0 small">${data.error || "Update failed."}</div>`;
+          }
+        } catch (err) {
+          alertDiv.innerHTML = `<div class="alert alert-danger py-2 mb-0 small">Server connection error.</div>`;
+        }
+      }
+
+      // 2. Fetch Notifications & Unread Badge Counter
+      async function fetchNotifications() {
+        if (!currentUser) return;
+        try {
+          const res = await fetch(
+            `${API_BASE}/notifications?userId=${currentUser.id}`,
+          );
+          if (!res.ok) return;
+          const data = await res.json();
+
+          const badge = document.getElementById("notifBadge");
+          const container = document.getElementById("notifListContainer");
+
+          if (data.unreadCount > 0) {
+            badge.style.display = "inline-block";
+            badge.textContent = data.unreadCount;
+
+            if (
+              data.unreadCount > lastKnownUnreadCount &&
+              lastKnownUnreadCount !== 0
+            ) {
+              const latest = data.notifications[0];
+              if (latest) {
+                showToast(`🔔 ${latest.title}: ${latest.message}`, "info");
+              }
+            }
+          } else {
+            badge.style.display = "none";
+          }
+          lastKnownUnreadCount = data.unreadCount;
+
+          if (!container) return;
+
+          if (data.notifications.length === 0) {
+            container.innerHTML = `<li class="text-center text-muted py-3 small">No notifications yet.</li>`;
+            return;
+          }
+
+          container.innerHTML = "";
+          data.notifications.forEach((n) => {
+            const unreadClass = !n.isRead ? "notif-unread" : "";
+            let icon = "ℹ️";
+            if (n.type === "SUCCESS") icon = "✅";
+            else if (n.type === "DANGER") icon = "❌";
+            else if (n.type === "WARNING") icon = "⚠️";
+
+            const item = document.createElement("li");
+            item.className = `p-2 rounded mb-1 ${unreadClass}`;
+            item.style.cursor = "pointer";
+            item.onclick = () => markNotificationRead(n.id);
+            item.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="small fw-bold">${icon} ${n.title}</span>
+                            <span class="text-muted" style="font-size: 0.7rem;">${n.time.substring(11, 16)}</span>
+                        </div>
+                        <div class="small text-muted mt-1" style="font-size: 0.78rem;">${n.message}</div>
+                    `;
+            container.appendChild(item);
+          });
+        } catch (err) {
+          console.error("Failed to load notifications", err);
+        }
+      }
+
+      async function markNotificationRead(id) {
+        try {
+          await fetch(`${API_BASE}/notifications/${id}/read`, {
+            method: "POST",
+          });
+          fetchNotifications();
+        } catch (err) {}
+      }
+
+      async function markAllNotificationsRead(e) {
+        e.preventDefault();
+        if (!currentUser) return;
+        try {
+          await fetch(
+            `${API_BASE}/notifications/read-all?userId=${currentUser.id}`,
+            { method: "POST" },
+          );
+          fetchNotifications();
+        } catch (err) {}
+      }
+
+      // 3. Live Auto-Sync Poller (Every 5 seconds)
+      setInterval(() => {
+        if (!currentUser) return;
+
+        fetchNotifications();
+
+        if (
+          currentUser.role === "ADMIN" ||
+          currentUser.role === "SUPER_ADMIN"
+        ) {
+          const adminTab = document.getElementById("tab-admin");
+          if (adminTab && adminTab.classList.contains("active")) {
+            loadKpiStats();
+            loadPendingRequests();
+          }
+        }
+
+        if (currentUser.role === "CLASS_PRESIDENT") {
+          const presTab = document.getElementById("tab-president");
+          if (presTab && presTab.classList.contains("active")) {
+            loadMyReservations();
+          }
+        }
+      }, 5000);
+
+      function activateRegisterTab() {
+        document.getElementById("guestWelcomeView").style.display = "none";
+        document.getElementById("pills-tab").style.display = "flex";
+        document.getElementById("pills-tabContent").style.display = "block";
+
+        document.getElementById("navItemPresident").style.display = "none";
+        document.getElementById("navItemAdmin").style.display = "none";
+        document.getElementById("navItemSuperAdmin").style.display = "none";
+        document.getElementById("navItemRegister").style.display = "block";
+
+        bootstrap.Tab.getOrCreateInstance(
+          document.getElementById("tab-register-btn"),
+        ).show();
+      }
+
+      // 4. Login & Logout
+      function handleLogin(e) {
+        e.preventDefault();
+        const alertDiv = document.getElementById("loginAlert");
+        const email = document.getElementById("loginEmail").value.trim();
+        const password = document.getElementById("loginPassword").value;
+
+        fetch(`${API_BASE}/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.success) {
+              currentUser = data.user;
+              sessionStorage.setItem("pup_user", JSON.stringify(currentUser));
+              applyRolePermissions();
+              bootstrap.Modal.getInstance(
+                document.getElementById("loginModal"),
+              ).hide();
+              showToast(`Welcome back, ${currentUser.fullName}!`, "success");
+              fetchSchedule();
+            } else {
+              alertDiv.innerHTML = `<div class="alert alert-danger py-2 mb-0">${data.error || "Login failed"}</div>`;
+            }
+          })
+          .catch(
+            () =>
+              (alertDiv.innerHTML = `<div class="alert alert-danger py-2 mb-0">Server connection error.</div>`),
+          );
+      }
+
+      function handleLogout() {
+        sessionStorage.removeItem("pup_user");
+        currentUser = null;
+        applyRolePermissions();
+        showToast("Signed out successfully.", "info");
+      }
+
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      document.getElementById("resDate").value = tomorrow
+        .toISOString()
+        .split("T")[0];
+
+      // 5. Resources Dropdown
+      async function loadResources() {
+        try {
+          const res = await fetch(`${API_BASE}/reservations/resources`);
+          const resources = await res.json();
+          const select = document.getElementById("resourceSelect");
+          select.innerHTML = "";
+          resources.forEach((r) => {
+            const opt = document.createElement("option");
+            opt.value = r.id;
+            const statusText =
+              r.status === "UNDER_MAINTENANCE" ? " [MAINTENANCE]" : "";
+            opt.textContent = `${r.name} (${r.type} - Available: ${r.availableQuantity}/${r.totalQuantity})${statusText}`;
+            if (r.status === "UNDER_MAINTENANCE") opt.disabled = true;
+            select.appendChild(opt);
+          });
+          fetchSchedule();
+        } catch (err) {
+          console.error("Failed to load resources", err);
+        }
+      }
+      loadResources();
+
+      // 6. Timetable Schedule
+      async function fetchSchedule() {
+        const resourceId = document.getElementById("resourceSelect").value;
+        const date = document.getElementById("resDate").value;
+        const grid = document.getElementById("timetableGrid");
+        if (!resourceId || !date) return;
+
+        grid.innerHTML = `<div class="col-12 text-center text-muted py-2"><div class="spinner-border spinner-border-sm text-danger" role="status"></div> Checking availability...</div>`;
+
+        try {
+          const res = await fetch(
+            `${API_BASE}/reservations/availability?resourceId=${resourceId}&date=${date}`,
+          );
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            grid.innerHTML = `<div class="col-12 text-center text-danger py-2">Error ${res.status}: ${errData.error || "Failed to fetch schedule"}</div>`;
+            return;
+          }
+          const data = await res.json();
+          if (!data.bookings) {
+            grid.innerHTML = `<div class="col-12 text-center text-danger py-2">No bookings received.</div>`;
+            return;
+          }
+
+          grid.innerHTML = "";
+
+          const slots = [
+            { start: "07:00", end: "08:00" },
+            { start: "08:00", end: "09:00" },
+            { start: "09:00", end: "10:00" },
+            { start: "10:00", end: "11:00" },
+            { start: "11:00", end: "12:00" },
+            { start: "12:00", end: "13:00" },
+            { start: "13:00", end: "14:00" },
+            { start: "14:00", end: "15:00" },
+            { start: "15:00", end: "16:00" },
+            { start: "16:00", end: "17:00" },
+            { start: "17:00", end: "18:00" },
+            { start: "18:00", end: "19:00" },
+          ];
+
+          slots.forEach((slot) => {
+            const col = document.createElement("div");
+            col.className = "col-6 col-md-3";
+
+            let conflict = null;
+            let bookedUnits = 0;
+
+            data.bookings.forEach((b) => {
+              const bStart = b.startTime.substring(0, 5);
+              const bEnd = b.endTime.substring(0, 5);
+              if (slot.start < bEnd && slot.end > bStart) {
+                conflict = b;
+                bookedUnits += b.quantity;
+              }
+            });
+
+            const isRoom = data.resourceType === "ROOM";
+            const isFullyBooked = isRoom
+              ? conflict !== null
+              : data.totalQuantity - bookedUnits <= 0;
+
+            if (isFullyBooked) {
+              col.innerHTML = `
+                            <div class="p-2 border rounded bg-danger-subtle text-danger text-center small">
+                                <strong>${slot.start} - ${slot.end}</strong><br>
+                                <span class="badge bg-danger">Booked</span><br>
+                                <small class="text-truncate d-block">${conflict ? conflict.professor : "Reserved"}</small>
+                            </div>
+                        `;
+            } else {
+              const unitsLeft = isRoom
+                ? "Available"
+                : `${data.totalQuantity - bookedUnits} left`;
+              col.innerHTML = `
+                            <div class="p-2 border rounded bg-success-subtle text-success text-center small slot-pill" 
+                                 onclick="selectSlot('${slot.start}', '${slot.end}')" 
+                                 title="Click to select this slot">
+                                <strong>${slot.start} - ${slot.end}</strong><br>
+                                <span class="badge bg-success">Free (${unitsLeft})</span><br>
+                                <small class="text-muted">Click to select</small>
+                            </div>
+                        `;
+            }
+            grid.appendChild(col);
+          });
+        } catch (err) {
+          grid.innerHTML = `<div class="col-12 text-center text-danger py-2">Failed to load schedule.</div>`;
+        }
+      }
+
+      function selectSlot(start, end) {
+        document.getElementById("startTime").value = start;
+        document.getElementById("endTime").value = end;
+        showToast(`Selected timeslot: ${start} - ${end}`, "info");
+      }
+
+      // 7. Submit Reservation
+      async function handleReservationSubmit(e) {
+        e.preventDefault();
+        const resultCard = document.getElementById("resultCard");
+        resultCard.innerHTML = `<div class="spinner-border text-danger" role="status"></div>`;
+
+        const presId = currentUser
+          ? currentUser.id
+          : parseInt(document.getElementById("presidentId").value || "2");
+
+        const payload = {
+          presidentId: presId,
+          resourceId: parseInt(document.getElementById("resourceSelect").value),
+          reservationDate: document.getElementById("resDate").value,
+          startTime: document.getElementById("startTime").value + ":00",
+          endTime: document.getElementById("endTime").value + ":00",
+          professorName: document.getElementById("professorName").value,
+          purpose: document.getElementById("purpose").value,
+          requestedQuantity: parseInt(
+            document.getElementById("resQuantity").value,
+          ),
+        };
+
+        try {
+          const response = await fetch(`${API_BASE}/reservations/request`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const data = await response.json();
+
+          if (response.ok && data.success) {
+            if (data.status === "AUTO_APPROVED") {
+              showToast("Reservation Auto-Approved!", "success");
+              resultCard.innerHTML = `
+                            <div class="alert alert-success border-0 mb-2 py-2">
+                                <h6 class="fw-bold mb-1">🎉 Auto-Approved!</h6>
+                                <small>${data.message}</small>
+                            </div>
+                            <div class="card bg-dark text-white p-3 mb-2">
+                                <small class="text-secondary">Token: </small>
+                                <span class="badge badge-token text-warning fw-bold my-1">${data.pickupToken}</span>
+                                <small class="text-muted mb-2 d-block">Valid until 30m after start time</small>
+                                <button class="btn btn-sm btn-outline-warning" onclick="showPickupPass(${data.reservationId})">
+                                    🎟️ Open Official Pickup Voucher
+                                </button>
+                            </div>
+                        `;
+            } else {
+              showToast(
+                "Scheduling conflict: sent to Admin for review",
+                "warning",
+              );
+              resultCard.innerHTML = `
+                            <div class="alert alert-warning border-0 py-2">
+                                <h6 class="fw-bold mb-1">⏳ Sent to Admin (Pending)</h6>
+                                <small>${data.message}</small>
+                            </div>
+                        `;
+            }
+            loadResources();
+            fetchSchedule();
+            loadMyReservations();
+            loadKpiStats();
+          } else {
+            showToast(data.error || "Reservation request failed.", "error");
+            resultCard.innerHTML = `
+                        <div class="alert alert-danger border-0 py-2">
+                            <h6 class="fw-bold mb-1">Request Rejected</h6>
+                            <small>${data.error || "Could not process request."}</small>
+                        </div>
+                    `;
+          }
+        } catch (err) {
+          showToast("Server connection error.", "error");
+          resultCard.innerHTML = `<div class="alert alert-danger py-2">Error connecting to server.</div>`;
+        }
+      }
+
+      // 8. My Reservations & Live Filter
+      async function loadMyReservations() {
+        const tbody = document.getElementById("myBookingsBody");
+        const presId = currentUser
+          ? currentUser.id
+          : parseInt(document.getElementById("presidentId")?.value || "2");
+
+        try {
+          const res = await fetch(
+            `${API_BASE}/reservations/my-reservations?presidentId=${presId}`,
+          );
+          if (!res.ok) {
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-3">No history found.</td></tr>`;
+            return;
+          }
+          cachedMyReservations = await res.json();
+          filterMyReservations();
+        } catch (err) {
+          tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-3">Error loading bookings.</td></tr>`;
+        }
+      }
+
+      function filterMyReservations() {
+        const query = (
+          document.getElementById("myBookingsSearchInput")?.value || ""
+        )
+          .toLowerCase()
+          .trim();
+        const statusFilter = (
+          document.getElementById("myBookingsStatusFilter")?.value || ""
+        ).trim();
+        const tbody = document.getElementById("myBookingsBody");
+        if (!tbody) return;
+
+        const filtered = cachedMyReservations.filter((r) => {
+          const matchesQuery =
+            !query ||
+            (r.resourceName && r.resourceName.toLowerCase().includes(query)) ||
+            (r.purpose && r.purpose.toLowerCase().includes(query)) ||
+            (r.professorName &&
+              r.professorName.toLowerCase().includes(query)) ||
+            (r.reservationDate && r.reservationDate.includes(query));
+
+          const matchesStatus = !statusFilter || r.status === statusFilter;
+          return matchesQuery && matchesStatus;
+        });
+
+        tbody.innerHTML = "";
+        if (filtered.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-3">No matching bookings.</td></tr>`;
+          return;
+        }
+
+        filtered.forEach((r) => {
+          const row = document.createElement("tr");
+
+          let statusBadge = `<span class="badge bg-secondary">${r.status}</span>`;
+          if (r.status === "AUTO_APPROVED" || r.status === "APPROVED") {
+            statusBadge = `<span class="badge bg-success">${r.status}</span>`;
+          } else if (r.status === "PENDING") {
+            statusBadge = `<span class="badge bg-warning text-dark">PENDING</span>`;
+          } else if (r.status === "PICKED_UP") {
+            statusBadge = `<span class="badge bg-primary">IN USE</span>`;
+          } else if (r.status === "CANCELLED" || r.status === "REJECTED") {
+            statusBadge = `<span class="badge bg-danger">${r.status}</span>`;
+          }
+
+          let actionHtml = `<small class="text-muted">-</small>`;
+          if (
+            (r.status === "AUTO_APPROVED" || r.status === "APPROVED") &&
+            r.pickupToken
+          ) {
+            actionHtml = `
+                        <button class="btn btn-sm btn-dark py-0 px-2" onclick="showPickupPass(${r.id})">🎟️ Pass</button>
+                        <button class="btn btn-sm btn-outline-danger py-0 px-1 ms-1" title="Cancel Booking" onclick="cancelMyReservation(${r.id})">&times;</button>
+                    `;
+          } else if (r.status === "PENDING") {
+            actionHtml = `<button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="cancelMyReservation(${r.id})">Cancel</button>`;
+          }
+
+          row.innerHTML = `
+                    <td>
+                        <strong>${r.resourceName}</strong>
+                        <br><small class="text-muted">${r.purpose || "Academic"}</small>
+                    </td>
+                    <td class="small">
+                        ${r.reservationDate}<br>
+                        <span class="text-muted">${r.startTime.substring(0, 5)} - ${r.endTime.substring(0, 5)}</span>
+                    </td>
+                    <td>${statusBadge}</td>
+                    <td>${actionHtml}</td>
+                `;
+          tbody.appendChild(row);
+        });
+      }
+
+      // 9. Show Official Printable Pickup Pass Modal
+      function showPickupPass(resId) {
+        let booking = cachedMyReservations.find((b) => b.id === resId);
+
+        if (!booking) {
+          loadMyReservations().then(() => {
+            booking = cachedMyReservations.find((b) => b.id === resId);
+            if (booking) renderPassModal(booking);
+          });
+          return;
+        }
+        renderPassModal(booking);
+      }
+
+      function renderPassModal(booking) {
+        activeVoucherToken = booking.pickupToken;
+        const borrowerName = currentUser
+          ? currentUser.fullName
+          : "Class President";
+        const borrowerSection =
+          currentUser && currentUser.section ? currentUser.section : "N/A";
+
+        const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(booking.pickupToken)}`;
+
+        const modalBody = document.getElementById("passModalBody");
+        modalBody.innerHTML = `
+                <div id="printableVoucherArea" class="official-voucher p-4">
+                    <div class="voucher-header p-3 text-center rounded mb-3">
+                        <div class="small text-uppercase text-secondary fw-semibold">Republic of the Philippines</div>
+                        <h6 class="fw-bold mb-0 text-pup">POLYTECHNIC UNIVERSITY OF THE PHILIPPINES</h6>
+                        <div class="small text-muted">Office of the Vice President for Campuses &bull; San Pedro Campus</div>
+                        <div class="fw-bold text-dark mt-2 border-top border-bottom py-1 text-uppercase" style="letter-spacing: 1px;">
+                            Official Property & Room Pickup Authorization Slip
+                        </div>
+                    </div>
+
+                    <div class="row align-items-center mb-4">
+                        <div class="col-md-8">
+                            <table class="table table-sm table-borderless mb-0">
+                                <tr>
+                                    <th class="text-muted ps-0" style="width: 35%;">Reservation Ref:</th>
+                                    <td><strong class="text-dark">#${booking.id}</strong></td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted ps-0">Authorized Borrower:</th>
+                                    <td><strong>${borrowerName}</strong></td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted ps-0">Class Section:</th>
+                                    <td><span class="badge bg-light text-dark border">${borrowerSection}</span></td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted ps-0">Reserved Resource:</th>
+                                    <td><span class="text-pup fw-bold">${booking.resourceName}</span> (Qty: ${booking.quantity})</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted ps-0">Date & Timeslot:</th>
+                                    <td><strong>${booking.reservationDate}</strong> &bull; ${booking.startTime.substring(0, 5)} to ${booking.endTime.substring(0, 5)}</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted ps-0">Faculty in Charge:</th>
+                                    <td>${booking.professorName || "Department Faculty"}</td>
+                                </tr>
+                                <tr>
+                                    <th class="text-muted ps-0">Academic Purpose:</th>
+                                    <td>${booking.purpose || "Academic Requirement"}</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="col-md-4 text-center border-start ps-3">
+                            <img src="${qrCodeUrl}" alt="Pickup QR Code" class="img-fluid border p-1 rounded bg-white shadow-sm mb-1" style="max-width: 120px;">
+                            <div class="small text-muted">Scan to Verify</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-dark text-white p-3 rounded text-center mb-3">
+                        <div class="text-uppercase text-secondary small fw-semibold">Unguessable Receipt Token (Show to Admin Staff)</div>
+                        <h2 class="text-warning fw-bold my-1 letter-spacing-2">${booking.pickupToken}</h2>
+                        <small class="text-muted">Single-use redemption &bull; Valid until 30 minutes past start time</small>
+                    </div>
+
+                    <div class="small text-muted border-top pt-2" style="font-size: 0.78rem;">
+                        <strong>Borrower's Undertaking:</strong> The authorized class president agrees to properly safeguard the key or equipment and ensure prompt return immediately following the class period. Loss or damage shall be reported immediately to the Admin Office.
+                    </div>
+                </div>
+            `;
+
+        new bootstrap.Modal(document.getElementById("passModal")).show();
+      }
+
+      function copyCurrentToken() {
+        if (!activeVoucherToken) return;
+        navigator.clipboard.writeText(activeVoucherToken).then(() => {
+          showToast(
+            `Token "${activeVoucherToken}" copied to clipboard!`,
+            "info",
+          );
+        });
+      }
+
+      function printVoucher() {
+        const voucherHtml = document.getElementById(
+          "printableVoucherArea",
+        ).innerHTML;
+        const printWindow = window.open("", "_blank", "width=850,height=900");
+        printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>PUP San Pedro - Reservation Slip</title>
+                    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+                    <style>
+                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; background: #fff; }
+                        .official-voucher { border: 2px solid #800000; padding: 25px; border-radius: 8px; }
+                        .text-pup { color: #800000 !important; }
+                        .voucher-header { border-bottom: 2px solid #800000; background: #fdfbf7; padding: 15px; margin-bottom: 20px; text-align: center; }
+                        @media print {
+                            body { padding: 0; }
+                            @page { margin: 15mm; }
+                        }
+                    </style>
+                </head>
+                <body onload="window.print(); window.close();">
+                    <div class="official-voucher">
+                        ${voucherHtml}
+                    </div>
+                </body>
+                </html>
+            `);
+        printWindow.document.close();
+      }
+
+      async function cancelMyReservation(resId) {
+        const presId = currentUser
+          ? currentUser.id
+          : parseInt(document.getElementById("presidentId")?.value || "2");
+        try {
+          const res = await fetch(
+            `${API_BASE}/reservations/${resId}/cancel?presidentId=${presId}`,
+            { method: "POST" },
+          );
+          const data = await res.json();
+          if (res.ok) {
+            showToast("Reservation cancelled successfully.", "info");
+            loadMyReservations();
+            fetchSchedule();
+            loadResources();
+            loadKpiStats();
+          } else {
+            showToast(data.error, "error");
+          }
+        } catch (err) {
+          showToast("Server error.", "error");
+        }
+      }
+
+      function getActiveAdminEmail() {
+        return currentUser && currentUser.email
+          ? currentUser.email
+          : "superadmin@pup.edu.ph";
+      }
+
+      // 10. Admin Tab Operations
+      function loadAdminTab() {
+        loadKpiStats();
+        loadPendingRequests();
+        loadAdminInventory();
+      }
+
+      async function loadKpiStats() {
+        try {
+          const res = await fetch(`${API_BASE}/admin/dashboard/stats`);
+          if (!res.ok) return;
+          const stats = await res.json();
+          document.getElementById("kpiPending").textContent =
+            stats.pending || 0;
+          document.getElementById("kpiActive").textContent =
+            stats.activePickups || 0;
+          document.getElementById("kpiMaintenance").textContent =
+            stats.maintenance || 0;
+          document.getElementById("kpiFacilities").textContent =
+            stats.totalResources || 0;
+        } catch (err) {
+          console.error("Failed to load KPI stats", err);
+        }
+      }
+
+      async function loadAdminInventory() {
+        const tbody = document.getElementById("inventoryTableBody");
+        try {
+          const res = await fetch(`${API_BASE}/reservations/resources`);
+          cachedInventory = await res.json();
+          filterInventory();
+        } catch (err) {
+          tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger py-3">Error loading inventory.</td></tr>`;
+        }
+      }
+
+      function filterInventory() {
+        const query = (
+          document.getElementById("inventorySearchInput")?.value || ""
+        )
+          .toLowerCase()
+          .trim();
+        const typeFilter = (
+          document.getElementById("inventoryTypeFilter")?.value || ""
+        ).trim();
+        const tbody = document.getElementById("inventoryTableBody");
+        if (!tbody) return;
+
+        const filtered = cachedInventory.filter((r) => {
+          const matchesQuery =
+            !query || (r.name && r.name.toLowerCase().includes(query));
+          const matchesType = !typeFilter || r.type === typeFilter;
+          return matchesQuery && matchesType;
+        });
+
+        tbody.innerHTML = "";
+        if (filtered.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-3">No matching resources found.</td></tr>`;
+          return;
+        }
+
+        filtered.forEach((r) => {
+          const row = document.createElement("tr");
+          const isAvailable = r.status === "AVAILABLE";
+          const statusBadge = isAvailable
+            ? `<span class="badge bg-success">AVAILABLE</span>`
+            : `<span class="badge bg-warning text-dark">UNDER MAINTENANCE</span>`;
+
+          const toggleBtn = isAvailable
+            ? `<button class="btn btn-sm btn-outline-warning" onclick="toggleMaintenance(${r.id})">🛠️ Set Maintenance</button>`
+            : `<button class="btn btn-sm btn-outline-success" onclick="toggleMaintenance(${r.id})">✅ Mark Available</button>`;
+
+          row.innerHTML = `
+                    <td><strong>#${r.id}</strong></td>
+                    <td><strong>${r.name}</strong></td>
+                    <td><span class="badge bg-secondary">${r.type}</span></td>
+                    <td>${r.availableQuantity} / ${r.totalQuantity} units</td>
+                    <td>${statusBadge}</td>
+                    <td>${toggleBtn}</td>
+                `;
+          tbody.appendChild(row);
+        });
+      }
+
+      async function toggleMaintenance(resourceId) {
+        try {
+          const res = await fetch(
+            `${API_BASE}/admin/resources/${resourceId}/toggle-maintenance?adminEmail=${getActiveAdminEmail()}`,
+            { method: "POST" },
+          );
+          const data = await res.json();
+          if (res.ok) {
+            showToast(data.message, "info");
+            loadAdminInventory();
+            loadResources();
+            fetchSchedule();
+            loadKpiStats();
+          } else {
+            showToast(data.error, "error");
+          }
+        } catch (err) {
+          showToast("Server error.", "error");
+        }
+      }
+
+      function toggleQtyInput() {
+        const type = document.getElementById("newResourceType").value;
+        document.getElementById("qtyWrapper").style.display =
+          type === "EQUIPMENT" ? "block" : "none";
+      }
+
+      async function handleAddResource(e) {
+        e.preventDefault();
+        const alertDiv = document.getElementById("addResourceAlert");
+        const name = document.getElementById("newResourceName").value.trim();
+        const type = document.getElementById("newResourceType").value;
+        const qty =
+          type === "ROOM"
+            ? 1
+            : parseInt(document.getElementById("newResourceQty").value || "1");
+
+        try {
+          const res = await fetch(
+            `${API_BASE}/admin/resources?adminEmail=${getActiveAdminEmail()}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name, type, totalQuantity: qty }),
+            },
+          );
+          const data = await res.json();
+          if (res.ok && data.success) {
+            showToast(data.message, "success");
+            document.getElementById("addResourceForm").reset();
+            bootstrap.Modal.getInstance(
+              document.getElementById("addResourceModal"),
+            ).hide();
+            loadAdminInventory();
+            loadResources();
+            fetchSchedule();
+            loadKpiStats();
+          } else {
+            alertDiv.innerHTML = `<div class="alert alert-danger py-2 mb-0">${data.error}</div>`;
+          }
+        } catch (err) {
+          alertDiv.innerHTML = `<div class="alert alert-danger py-2 mb-0">Server error.</div>`;
+        }
+      }
+
+      async function loadPendingRequests() {
+        const tbody = document.getElementById("pendingTableBody");
+        try {
+          const res = await fetch(`${API_BASE}/admin/reservations/pending`);
+          const list = await res.json();
+          tbody.innerHTML = "";
+          if (list.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">No pending requests right now.</td></tr>`;
+            return;
+          }
+          list.forEach((r) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                        <td><strong>#${r.id}</strong></td>
+                        <td>${r.president ? r.president.fullName : "President"} <br><small class="text-muted">${r.president ? r.president.section : ""}</small></td>
+                        <td>${r.resource ? r.resource.name : ""} (Qty: ${r.requestedQuantity})</td>
+                        <td>${r.reservationDate} <br><small class="text-muted">${r.startTime} - ${r.endTime}</small></td>
+                        <td>${r.professorName}</td>
+                        <td>${r.purpose}</td>
+                        <td>
+                            <button class="btn btn-sm btn-success me-1" onclick="approveRequest(${r.id})">Approve</button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="rejectRequest(${r.id})">Reject</button>
+                        </td>
+                    `;
+            tbody.appendChild(row);
+          });
+        } catch (err) {
+          tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-4">Failed to load requests.</td></tr>`;
+        }
+      }
+
+      async function approveRequest(id) {
+        try {
+          const res = await fetch(
+            `${API_BASE}/admin/reservations/${id}/approve?adminEmail=${getActiveAdminEmail()}`,
+            { method: "POST" },
+          );
+          const data = await res.json();
+          if (res.ok) {
+            showToast(
+              `Approved reservation! Generated token: ${data.generatedPickupToken}`,
+              "success",
+            );
+            loadPendingRequests();
+            fetchSchedule();
+            loadMyReservations();
+            loadKpiStats();
+          } else {
+            showToast(data.error, "error");
+          }
+        } catch (err) {
+          showToast("Server error.", "error");
+        }
+      }
+
+      async function rejectRequest(id) {
+        const reason = prompt(
+          "Enter reason for rejection:",
+          "Classroom unavailable / scheduled maintenance",
+        );
+        if (!reason) return;
+        try {
+          const res = await fetch(
+            `${API_BASE}/admin/reservations/${id}/reject?adminEmail=${getActiveAdminEmail()}&reason=${encodeURIComponent(reason)}`,
+            { method: "POST" },
+          );
+          const data = await res.json();
+          if (res.ok) {
+            showToast("Reservation rejected.", "warning");
+            loadPendingRequests();
+            fetchSchedule();
+            loadMyReservations();
+            loadKpiStats();
+          } else {
+            showToast(data.error, "error");
+          }
+        } catch (err) {
+          showToast("Server error.", "error");
+        }
+      }
+
+      async function handleTokenRedeem() {
+        const token = document.getElementById("pickupTokenInput").value.trim();
+        const resultDiv = document.getElementById("pickupResult");
+        if (!token) return;
+        try {
+          const res = await fetch(
+            `${API_BASE}/admin/pickup?token=${encodeURIComponent(token)}&adminEmail=${getActiveAdminEmail()}`,
+            { method: "POST" },
+          );
+          const data = await res.json();
+          if (res.ok) {
+            showToast(`Token verified! Key/equipment released.`, "success");
+            resultDiv.innerHTML = `<div class="alert alert-success mt-2 mb-0 py-2">${data.message} (Status: ${data.status})</div>`;
+            document.getElementById("pickupTokenInput").value = "";
+            loadResources();
+            loadAdminInventory();
+            fetchSchedule();
+            loadMyReservations();
+            loadKpiStats();
+          } else {
+            showToast(data.error, "error");
+            resultDiv.innerHTML = `<div class="alert alert-danger mt-2 mb-0 py-2">${data.error}</div>`;
+          }
+        } catch (err) {
+          showToast("Server error.", "error");
+          resultDiv.innerHTML = `<div class="alert alert-danger mt-2 mb-0 py-2">Server error.</div>`;
+        }
+      }
+
+      async function handleReturn() {
+        const id = document.getElementById("returnResIdInput").value.trim();
+        const damaged = document.getElementById("damagedCheck").checked;
+        const resultDiv = document.getElementById("returnResult");
+        if (!id) return;
+        try {
+          const res = await fetch(
+            `${API_BASE}/admin/reservations/${id}/return?adminEmail=${getActiveAdminEmail()}&damaged=${damaged}`,
+            { method: "POST" },
+          );
+          const data = await res.json();
+          if (res.ok) {
+            showToast(
+              "Resource returned and transaction completed.",
+              "success",
+            );
+            resultDiv.innerHTML = `<div class="alert alert-success mb-0 py-2">${data.message}</div>`;
+            document.getElementById("returnResIdInput").value = "";
+            loadResources();
+            loadAdminInventory();
+            fetchSchedule();
+            loadMyReservations();
+            loadKpiStats();
+          } else {
+            showToast(data.error, "error");
+            resultDiv.innerHTML = `<div class="alert alert-danger mb-0 py-2">${data.error}</div>`;
+          }
+        } catch (err) {
+          showToast("Server error.", "error");
+          resultDiv.innerHTML = `<div class="alert alert-danger mb-0 py-2">Server error.</div>`;
+        }
+      }
+
+      // 11. Super Admin: Users, Codes, & Audit Operations
+      function loadSuperAdminData() {
+        loadCodes();
+        loadAuditLogs();
+        loadUsers();
+      }
+
+      // Load All Accounts
+      async function loadUsers() {
+        const tbody = document.getElementById("usersTableBody");
+        try {
+          const res = await fetch(
+            `${API_BASE}/superadmin/users?adminEmail=${getActiveAdminEmail()}`,
+          );
+          if (!res.ok) return;
+          cachedUsers = await res.json();
+          tbody.innerHTML = "";
+
+          cachedUsers.forEach((u) => {
+            const row = document.createElement("tr");
+
+            let roleBadge = `<span class="badge bg-warning text-dark">${u.role}</span>`;
+            if (u.role === "SUPER_ADMIN")
+              roleBadge = `<span class="badge bg-danger">SUPER ADMIN</span>`;
+            else if (u.role === "ADMIN")
+              roleBadge = `<span class="badge bg-primary">ADMIN STAFF</span>`;
+
+            const statusBadge = u.active
+              ? `<span class="badge bg-success">ACTIVE</span>`
+              : `<span class="badge bg-secondary">DEACTIVATED</span>`;
+
+            const isSelf = currentUser && currentUser.id === u.id;
+            const actionBtn = isSelf
+              ? `<small class="text-muted">Current Session</small>`
+              : `<button class="btn btn-sm ${u.active ? "btn-outline-danger" : "btn-outline-success"}" onclick="toggleUserStatus(${u.id})">
+                             ${u.active ? "Deactivate" : "Activate"}
+                           </button>`;
+
+            row.innerHTML = `
+                        <td><strong>#${u.id}</strong></td>
+                        <td>${u.fullName}</td>
+                        <td><code>${u.email}</code></td>
+                        <td>${roleBadge}</td>
+                        <td>${u.section}</td>
+                        <td>${statusBadge}</td>
+                        <td>${actionBtn}</td>
+                    `;
+            tbody.appendChild(row);
+          });
+        } catch (err) {
+          tbody.innerHTML = `<tr><td colspan="7" class="text-center text-danger py-3">Error loading users.</td></tr>`;
+        }
+      }
+
+      // Create Admin Staff Form
+      async function handleCreateAdmin(e) {
+        e.preventDefault();
+        const alertDiv = document.getElementById("createAdminAlert");
+        const fullName = document.getElementById("adminFullName").value.trim();
+        const email = document.getElementById("adminEmailInput").value.trim();
+        const password = document.getElementById("adminPasswordInput").value;
+
+        try {
+          const res = await fetch(
+            `${API_BASE}/superadmin/users/create-admin?adminEmail=${getActiveAdminEmail()}`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ fullName, email, password }),
+            },
+          );
+          const data = await res.json();
+          if (res.ok && data.success) {
+            showToast(data.message, "success");
+            document.getElementById("createAdminForm").reset();
+            bootstrap.Modal.getInstance(
+              document.getElementById("createAdminModal"),
+            ).hide();
+            loadUsers();
+            loadAuditLogs();
+          } else {
+            alertDiv.innerHTML = `<div class="alert alert-danger py-2 mb-0 small">${data.error}</div>`;
+          }
+        } catch (err) {
+          alertDiv.innerHTML = `<div class="alert alert-danger py-2 mb-0 small">Server error.</div>`;
+        }
+      }
+
+      // Toggle User Status
+      async function toggleUserStatus(userId) {
+        try {
+          const res = await fetch(
+            `${API_BASE}/superadmin/users/${userId}/toggle-status?adminEmail=${getActiveAdminEmail()}`,
+            { method: "POST" },
+          );
+          const data = await res.json();
+          if (res.ok) {
+            showToast(data.message, "info");
+            loadUsers();
+            loadAuditLogs();
+          } else {
+            showToast(data.error, "error");
+          }
+        } catch (err) {
+          showToast("Server error.", "error");
+        }
+      }
+
+      async function handleGenerateCode() {
+        const section = document.getElementById("newSectionInput").value.trim();
+        const resultDiv = document.getElementById("generateCodeResult");
+        if (!section) return;
+        try {
+          const res = await fetch(
+            `${API_BASE}/superadmin/codes/generate?section=${encodeURIComponent(section)}&adminEmail=${getActiveAdminEmail()}`,
+            { method: "POST" },
+          );
+          const data = await res.json();
+          if (res.ok) {
+            showToast(
+              `Generated code: ${data.code} for ${data.assignedSection}`,
+              "success",
+            );
+            resultDiv.innerHTML = `<div class="alert alert-success py-2 mb-0">Generated: <strong>${data.code}</strong> for ${data.assignedSection}</div>`;
+            document.getElementById("newSectionInput").value = "";
+            loadCodes();
+            loadAuditLogs();
+          } else {
+            showToast(data.error, "error");
+            resultDiv.innerHTML = `<div class="alert alert-danger py-2 mb-0">${data.error}</div>`;
+          }
+        } catch (err) {
+          showToast("Server error.", "error");
+          resultDiv.innerHTML = `<div class="alert alert-danger py-2 mb-0">Server error.</div>`;
+        }
+      }
+
+      async function loadCodes() {
+        const tbody = document.getElementById("codesTableBody");
+        try {
+          const res = await fetch(`${API_BASE}/superadmin/codes`);
+          const list = await res.json();
+          tbody.innerHTML = "";
+          list.forEach((c) => {
+            const row = document.createElement("tr");
+            const badge = c.used
+              ? `<span class="badge bg-secondary">USED</span>`
+              : `<span class="badge bg-success">ACTIVE</span>`;
+            row.innerHTML = `<td><code>${c.code}</code></td><td>${c.assignedSection}</td><td>${badge}</td>`;
+            tbody.appendChild(row);
+          });
+        } catch (err) {
+          tbody.innerHTML = `<tr><td colspan="3" class="text-center text-danger">Failed to load codes.</td></tr>`;
+        }
+      }
+
+      async function loadAuditLogs() {
+        const tbody = document.getElementById("auditTableBody");
+        try {
+          const res = await fetch(`${API_BASE}/superadmin/audit-logs`);
+          cachedAuditLogs = await res.json();
+          filterAuditLogs();
+        } catch (err) {
+          tbody.innerHTML = `<tr><td colspan="4" class="text-center text-danger py-3">Failed to load audit logs.</td></tr>`;
+        }
+      }
+
+      function filterAuditLogs() {
+        const query = (document.getElementById("auditSearchInput")?.value || "")
+          .toLowerCase()
+          .trim();
+        const actionFilter = (
+          document.getElementById("auditActionFilter")?.value || ""
+        ).trim();
+        const tbody = document.getElementById("auditTableBody");
+        if (!tbody) return;
+
+        const filtered = cachedAuditLogs.filter((log) => {
+          const matchesQuery =
+            !query ||
+            (log.performedBy &&
+              log.performedBy.toLowerCase().includes(query)) ||
+            (log.action && log.action.toLowerCase().includes(query)) ||
+            (log.details && log.details.toLowerCase().includes(query)) ||
+            (log.timestamp && log.timestamp.includes(query));
+
+          const matchesAction = !actionFilter || log.action === actionFilter;
+          return matchesQuery && matchesAction;
+        });
+
+        tbody.innerHTML = "";
+        if (filtered.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-3">No matching audit logs found.</td></tr>`;
+          return;
+        }
+
+        filtered.forEach((log) => {
+          const row = document.createElement("tr");
+          const time = log.timestamp
+            ? log.timestamp.replace("T", " ").substring(0, 19)
+            : "";
+          row.innerHTML = `
+                    <td class="text-nowrap small text-muted">${time}</td>
+                    <td class="small"><strong>${log.performedBy || "SYSTEM"}</strong></td>
+                    <td><span class="badge bg-dark">${log.action}</span></td>
+                    <td class="small">${log.details}</td>
+                `;
+          tbody.appendChild(row);
+        });
+      }
+
+      // 12. Register President Form
+      async function handleRegister(e) {
+        e.preventDefault();
+        const alertDiv = document.getElementById("registerAlert");
+        const payload = {
+          fullName: document.getElementById("regFullName").value,
+          email: document.getElementById("regEmail").value,
+          password: document.getElementById("regPassword").value,
+          registrationCode: document.getElementById("regCode").value.trim(),
+        };
+        try {
+          const res = await fetch(`${API_BASE}/auth/register-president`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const data = await res.json();
+          if (res.ok) {
+            showToast(data.message, "success");
+            alertDiv.innerHTML = `<div class="alert alert-success mb-0">${data.message}</div>`;
+            document.getElementById("registerForm").reset();
+          } else {
+            showToast(data.error, "error");
+            alertDiv.innerHTML = `<div class="alert alert-danger mb-0">${data.error}</div>`;
+          }
+        } catch (err) {
+          showToast("Server connection error.", "error");
+          alertDiv.innerHTML = `<div class="alert alert-danger mb-0">Server error.</div>`;
+        }
+      }
+    </script>
+  </body>
+</html>
